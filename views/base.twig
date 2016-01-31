@@ -12,13 +12,16 @@
 
 	<nav id="navbar" class="top-bar">{% include "navbar.twig" %}</nav>
 
-	{{content|raw}}
+        <section id="content">
+	    {{content|raw}}
+        </section>
 
 	<footer id="footer" class="row column">{% include "footer.twig" %}</footer>
 
 	<script type="text/javascript" src="node_modules/spf/dist/spf.js"></script>
 	<script type="text/javascript">
-		var b = spf.init();console.log('spf initialised: ', b);
+		var b = spf.init();
+		console.log('spf initialised: ', b);
 		// spf.load('./header', {})
 	</script>
 	<script type="text/javascript" src="src/js/app.js"></script>
