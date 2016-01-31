@@ -1,0 +1,33 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>SPF Test Site</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<link rel="stylesheet" href="dist/css/foundation-6/foundation.min.css" />
+	<link rel="stylesheet" href="dist/css/styles.css" />
+	<link rel="shortcut icon" href="/favicon.ico">
+</head>
+<body>
+
+	<nav id="navbar" class="top-bar">{% include "navbar.twig" %}</nav>
+
+	{{content|raw}}
+
+	<footer id="footer" class="row column">{% include "footer.twig" %}</footer>
+
+	<script type="text/javascript" src="node_modules/spf/dist/spf.js"></script>
+	<script type="text/javascript">
+		var b = spf.init();console.log('spf initialised: ', b);
+		// spf.load('./header', {})
+	</script>
+	<script type="text/javascript" src="src/js/app.js"></script>
+
+	<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript" src="dist/js/foundation-6/foundation.min.js"></script>
+	<script type="text/javascript">
+		$(document).foundation();
+	</script>
+
+</body>
+</html>
