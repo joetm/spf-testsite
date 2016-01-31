@@ -29,7 +29,18 @@ class SpfResponse { # extends stdClass
         $this->response->body = $arr;
     }
     public function getResponse() {
-	return $this->response;
+	return json_encode($this->response);
+    }
+    public function render($template, $app) {
+        if ($app->isSpfRequest === true) {
+            $this->response->setBody(['content' => $app['twig']->render($template.'.twig', array())]);
+            return $this->getResponse();
+        } else {
+            return $app['twig']->render('base.twig', array(
+                'header'  => $app['twig']->render('header.twig', array()),
+                'content' => $app['twig']->render($template.'.twig', array()),
+            ));
+        }
     }
 }
 
@@ -61,29 +72,23 @@ $app->get('/', function () use ($app) {
 });
 
 $app->get('/photos', function () use($app) {
-    if ($app->isSpfRequest === true) {
-        $spf = new SpfResponse();
-        $spf->setBody(['content' => $app['twig']->render('photos.twig', array())]);
-        return json_encode($spf->getResponse());
-    } else {
-        return $app['twig']->render('base.twig', array(
-            'header'  => $app['twig']->render('header.twig', array()),
-            'content' => $app['twig']->render('photos.twig', array()),
-        ));
-    }
+    $spf = new SpfResponse();
+    return $spf->render('photos', $app);
 })->before($checkSpfRoute);
 
 $app->get('/videos', function (Request $request) use($app) {
-    if ($app->isSpfRequest === true) {
-        $spf = new SpfResponse();
-        $spf->setBody(['content' => $app['twig']->render('videos.twig', array())]);
-        return json_encode($spf->getResponse());
-    } else {
-        return $app['twig']->render('base.twig', array(
-            'header'  => $app['twig']->render('header.twig', array()),
-            'content' => $app['twig']->render('videos.twig', array()),
-        ));
-    }
+    $spf = new SpfResponse();
+    return $spf->render('videos', $app);
+})->before($checkSpfRoute);
+
+$app->get('/login', function () use($app) {
+    $spf = new SpfResponse();
+    return $spf->render('login', $app);
+})->before($checkSpfRoute);
+
+$app->get('/join', function () use($app) {
+    $spf = new SpfResponse();
+    return $spf->render('join', $app);
 })->before($checkSpfRoute);
 
 $app['debug'] = true;
