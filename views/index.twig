@@ -2,8 +2,25 @@
 	<div class='row column text-center'>
 		<h1>Testing SPF</h1>
 		<p class='lead'>Not sure if I like loading chunks of html wrapped in JSON.</p>
-		<a href='#' class='button large'>I agree</a>
-		<a href='#' class='button large hollow'>I disagree</a>
+		<a class="button large" href='#' data-open="agreeModal" aria-controls="agreeModal" id="agree-reveal" aria-haspopup="true" tabindex="0">
+			I agree
+		</a>
+		<a class="button large hollow" href='#' data-open="disagreeModal" aria-controls="disagreeModal" id="disagree-reveal" aria-haspopup="true" tabindex="0">
+			I disagree
+		</a>
+	</div>
+	<!--modals-->
+	<div class="tiny reveal" id="agreeModal" data-reveal>
+		A wise choice
+		<button class="close-button" data-close aria-label="Close" type="button">
+			<span aria-hidden="true">&times;</span>
+		</button>
+	</div>
+	<div class="tiny reveal" id="disagreeModal" data-reveal>
+		A good choice
+		<button class="close-button" data-close aria-label="Close" type="button">
+			<span aria-hidden="true">&times;</span>
+		</button>
 	</div>
 </header>
 

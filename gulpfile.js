@@ -59,10 +59,9 @@ gulp.task('scss', function () {
 });
 */
 
-//concatcss
-gulp.task('concatcss', function() {
+gulp.task('minifycss', function() {
   return gulp.src([
-        'src/css/style.css'
+        'src/css/*.css'
     ])
     .pipe(minifyCSS())
     .pipe(concat('styles.min.css'))
@@ -72,7 +71,7 @@ gulp.task('concatcss', function() {
 
 /**********tasks***********/
 
-gulp.task('css', ['concatcss']);
+gulp.task('css', ['minifycss']);
 gulp.task('js', ['processjs']);
 
 gulp.task('build', ['css', 'js']);
