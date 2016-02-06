@@ -8,6 +8,10 @@ author.txt
 
 node_modules/
 vendor/
+BAK/
+agency.html
+
+composer.lock
 
 # Windows image file caches
 Thumbs.db
