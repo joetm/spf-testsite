@@ -4,6 +4,7 @@ require_once __DIR__.'/vendor/autoload.php';
 
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class MyApp extends Application {
     use Application\TwigTrait;
@@ -58,10 +59,16 @@ $checkSpfRoute = function (Request $request, MyApp $app) {
 
 $app = new MyApp();
 
+$app['debug'] = true;
+
 // set up twig
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
     'twig.path' => __DIR__.'/views',
 ));
+
+### ------
+### ROUTES
+### ------
 
 # INDEX
 $app->get('/', function () use ($app) {
@@ -70,27 +77,68 @@ $app->get('/', function () use ($app) {
     	'content' => $app['twig']->render('index.twig', array()),
     ));
 });
-
+# PHOTOS
 $app->get('/photos', function () use($app) {
     $spf = new SpfResponse();
     return $spf->render('photos', $app);
 })->before($checkSpfRoute);
-
+	# SINGLE PHOTO
+	$app->get('/photos/{id}', function () use($app) {
+	    $spf = new SpfResponse();
+	    return $spf->render('photo', $app);
+	})->assert('id', '\d+')
+	->before($checkSpfRoute);
+# VIDEOS
 $app->get('/videos', function (Request $request) use($app) {
     $spf = new SpfResponse();
     return $spf->render('videos', $app);
 })->before($checkSpfRoute);
-
+	# SINGLE VIDEO
+	$app->get('/video/{id}', function () use($app) {
+	    $spf = new SpfResponse();
+	    return $spf->render('video', $app);
+	})->assert('id', '\d+')
+	->before($checkSpfRoute);
+# LOGIN
 $app->get('/login', function () use($app) {
     $spf = new SpfResponse();
     return $spf->render('login', $app);
 })->before($checkSpfRoute);
-
+# JOIN
 $app->get('/join', function () use($app) {
     $spf = new SpfResponse();
     return $spf->render('join', $app);
 })->before($checkSpfRoute);
 
-$app['debug'] = true;
+# Error Handler
+$app->error(function (\Exception $e, $code) use ($app) {
+    # use default debug handler
+    if ($app['debug']) {
+        return;
+    }
+    switch ($code) {
+        case 401:
+            $message = '401 - Unauthorized';
+            break;
+        case 402:
+            $message = '402 - Payment Required';
+            break;
+        case 403:
+            $message = '403 - Forbidden';
+            break;
+        case 404:
+            $message = '404 - Not Found';
+            break;
+        case 405:
+            $message = '405 - Method Not Allowed';
+            break;
+        case 500:
+            $message = '500 - Internal Server Error';
+            break;
+        default:
+            $message = 'We are sorry, but something went terribly wrong.';
+    }
+    return new Response($message);
+});
 
 $app->run();
