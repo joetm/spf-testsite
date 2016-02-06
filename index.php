@@ -1,5 +1,7 @@
 <?php
 
+error_reporting(-1);
+
 require_once __DIR__.'/vendor/autoload.php';
 
 use Silex\Application;
@@ -16,36 +18,31 @@ class MyApp extends Application {
     # use Application\TranslationTrait;
 }
 
-class SpfResponse { # extends stdClass
-    private $response;
-    public function __construct () {
-        # parent::__construct();
-        $this->response = (object) array(
-            'head' => '<!-- Styles -->',
-            'body' => new stdClass(),
-            'foot' => '<!-- Scripts -->',
+class SpfResponse {
+    public static function wrapJSON(array $body, $head='', $foot='') {
+        return (object) array(
+            'head' => $head ? $head : '<!-- Styles -->',
+            'body' => $body,
+            'foot' => $foot ? $foot : '<!-- Scripts -->',
         );
     }
-    public function setBody(array $arr) {
-        $this->response->body = $arr;
-    }
-    public function getResponse() {
-	return json_encode($this->response);
-    }
-    public function render($template, $app) {
-        if ($app->isSpfRequest === true) {
-            $this->response->setBody(['content' => $app['twig']->render($template.'.twig', array())]);
-            return $this->getResponse();
+    public static function render($template, $twig, $isSpfRequest) {
+        if ($isSpfRequest === true) {
+	    // wrap the content in JSON
+            $tpl = $twig->render($template.'.twig', array());
+            return json_encode(self::wrapJSON(['content' => $tpl]));
         } else {
-            return $app['twig']->render('base.twig', array(
-                'header'  => $app['twig']->render('header.twig', array()),
-                'content' => $app['twig']->render($template.'.twig', array()),
+            // render the html directly
+            return $twig->render('base.twig', array(
+                'header'  => $twig->render('header.twig', array()),
+                'content' => $twig->render($template.'.twig', array()),
+                'footer'  => $twig->render('footer.twig', array()),
             ));
         }
     }
 }
 
-$checkSpfRoute = function (Request $request, MyApp $app) {
+$checkSPF = function (Request $request, MyApp $app) {
     if ($request->query->get('spf') === 'navigate') {
         // must return json-wrapped html fragments
         $app->isSpfRequest = true;
@@ -54,7 +51,6 @@ $checkSpfRoute = function (Request $request, MyApp $app) {
         $app->isSpfRequest = false;
     }
 };
-
 
 
 $app = new MyApp();
@@ -66,51 +62,50 @@ $app->register(new Silex\Provider\TwigServiceProvider(), array(
     'twig.path' => __DIR__.'/views',
 ));
 
+
 ### ------
 ### ROUTES
 ### ------
 
 # INDEX
 $app->get('/', function () use ($app) {
+    // index is always full html
     return $app['twig']->render('base.twig', array(
     	'header'  => $app['twig']->render('header.twig', array()),
     	'content' => $app['twig']->render('index.twig', array()),
+    	'footer'  => $app['twig']->render('footer.twig', array()),
     ));
 });
 # PHOTOS
-$app->get('/photos', function () use($app) {
-    $spf = new SpfResponse();
-    return $spf->render('photos', $app);
-})->before($checkSpfRoute);
+$app->get('/photos', function () use ($app) {
+    return SpfResponse::render('photos', $app['twig'], $app->isSpfRequest);
+})->before($checkSPF);
 	# SINGLE PHOTO
-	$app->get('/photos/{id}', function () use($app) {
-	    $spf = new SpfResponse();
-	    return $spf->render('photo', $app);
-	})->assert('id', '\d+')
-	->before($checkSpfRoute);
+	# $app->get('/photos/{id}', function () use($app) {
+	#     // return $spf->render('photo', $app);
+	# })->assert('id', '\d+');
+	
 # VIDEOS
-$app->get('/videos', function (Request $request) use($app) {
-    $spf = new SpfResponse();
-    return $spf->render('videos', $app);
-})->before($checkSpfRoute);
+$app->get('/videos', function () use ($app) {
+    return SpfResponse::render('videos', $app['twig'], $app->isSpfRequest);
+})->before($checkSPF);
 	# SINGLE VIDEO
-	$app->get('/video/{id}', function () use($app) {
-	    $spf = new SpfResponse();
-	    return $spf->render('video', $app);
-	})->assert('id', '\d+')
-	->before($checkSpfRoute);
+	# $app->get('/video/{id}', function () use($app) {
+	#     return $spf->render('video', $app);
+	# })->assert('id', '\d+');
+	
 # LOGIN
 $app->get('/login', function () use($app) {
-    $spf = new SpfResponse();
-    return $spf->render('login', $app);
-})->before($checkSpfRoute);
+    return SpfResponse::render('login', $app['twig'], $app->isSpfRequest);
+})->before($checkSPF);
 # JOIN
 $app->get('/join', function () use($app) {
-    $spf = new SpfResponse();
-    return $spf->render('join', $app);
-})->before($checkSpfRoute);
+    return SpfResponse::render('join', $app['twig'], $app->isSpfRequest);
+})->before($checkSPF);
 
+# -------------
 # Error Handler
+# -------------
 $app->error(function (\Exception $e, $code) use ($app) {
     # use default debug handler
     if ($app['debug']) {
